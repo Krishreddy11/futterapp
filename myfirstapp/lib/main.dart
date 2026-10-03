@@ -4,92 +4,241 @@ void main() {
   runApp(const MyApp());
 }
 
+// StatelessWidget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Mobile App Lab',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+// First Screen - StatelessWidget
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mobile App Lab'),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.flutter_dash,
+                size: 90,
+                color: Colors.deepPurple,
+              ),
+              const SizedBox(height: 20),
+
+              const Text(
+                'Interactive Flutter App',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              const Text(
+                'This screen is created using a StatelessWidget.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+
+              const SizedBox(height: 30),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const InteractiveScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Go to Interactive Screen'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+// Second Screen - StatefulWidget
+class InteractiveScreen extends StatefulWidget {
+  const InteractiveScreen({super.key});
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      title: const Text('My First Flutter App'),
-      centerTitle: true,
-    ),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(
-            Icons.flutter_dash,
-            size: 80,
-            color: Colors.deepPurple,
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Hello World!',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+  @override
+  State<InteractiveScreen> createState() => _InteractiveScreenState();
+}
+
+class _InteractiveScreenState extends State<InteractiveScreen>
+    with SingleTickerProviderStateMixin {
+  String message = 'Press the button below';
+  late final AnimationController _confettiController;
+  bool hasChangedText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void changeMessage() {
+    setState(() {
+      message = 'Hello! The text has changed.';
+      hasChangedText = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Nice! You unlocked a new message.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Interactive Screen'),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.touch_app,
+                    size: 80,
+                    color: Colors.deepPurple,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: Text(
+                      message,
+                      key: ValueKey(message),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  ElevatedButton(
+                    onPressed: hasChangedText ? null : changeMessage,
+                    child: Text(
+                      hasChangedText ? 'Text Changed' : 'Change Text',
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Go Back'),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 10),
-          Text(
-            'Welcome to my first Flutter application',
-            style: TextStyle(
-              fontSize: 16,
+          IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _confettiController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _ConfettiPainter(_confettiController.value),
+                  size: Size.infinite,
+                );
+              },
             ),
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
+
+class _ConfettiPainter extends CustomPainter {
+  _ConfettiPainter(this.progress);
+
+  final double progress;
+  static const colors = [
+    Colors.deepPurple,
+    Colors.amber,
+    Colors.teal,
+    Colors.pink,
+    Colors.blue,
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+    for (var index = 0; index < 36; index++) {
+      final startX = (index * 47.0) % size.width;
+      final drift = (index.isEven ? 1 : -1) * 26 * progress;
+      final x = startX + drift;
+      final y = -20 + (index % 9) * 12 + progress * (size.height * .72);
+      paint.color = colors[index % colors.length].withValues(
+        alpha: (1 - progress).clamp(.0, 1.0),
+      );
+      canvas.drawRect(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 8,
+          height: 12,
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter oldDelegate) {
+    return oldDelegate.progress != progress;
+  }
 }

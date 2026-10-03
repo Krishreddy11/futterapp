@@ -11,20 +11,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myfirstapp/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('navigates and disables Change Text after tapping', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.tap(find.text('Go to Interactive Screen'));
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    expect(find.text('Press the button below'), findsOneWidget);
+    final changeTextButton = find.widgetWithText(
+      ElevatedButton,
+      'Change Text',
+    );
+    expect(changeTextButton, findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(changeTextButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hello! The text has changed.'), findsOneWidget);
+    expect(find.text('Text Changed'), findsOneWidget);
+    expect(
+      tester.widget<ElevatedButton>(find.widgetWithText(
+        ElevatedButton,
+        'Text Changed',
+      )).onPressed,
+      isNull,
+    );
   });
 }
